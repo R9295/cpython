@@ -7407,6 +7407,36 @@ _PyEval_SliceIndexNotNone(PyObject *v, Py_ssize_t *pi)
     return 1;
 }
 
+void 
+append_importing(PyThreadState *tstate, PyObject* name, PyObject* field) {
+    PyList_Append(tstate->interp->importing, name);
+}
+
+void pop_importing(PyThreadState *tstate, PyObject* field){
+    PyObject* list = tstate->interp->importing;
+    Py_ssize_t list_size = PyList_Size(list);
+    tstate->interp->importing = PyList_GetSlice(list, 0, list_size - 1);
+}
+
+void check_importing(PyThreadState* tstate, PyObject* name, PyObject* field){
+    PyObject *list = tstate->interp->importing;
+    //PyObject *policy = tstate->interp->policy;
+    PyObject* policy = PySys_GetObject("policy");
+    // hacky size check for imports
+    Py_ssize_t list_size = PyList_Size(list);
+    if (list_size > 0) {
+        PyObject* root = PyList_GetItem(list, 0);
+        if (PyDict_Contains(policy, name) == 1) {
+            PyObject* policy_list = PyDict_GetItem(policy, name);
+            if (PySequence_Contains(policy_list, root) == 0) {
+              _PyErr_Format(tstate, PyExc_ImportError,
+                        "Not allowed to import %U as a %s of %U!",
+                        name, list_size > 1 ? "sub-dependency":"dependency", root);
+            }
+        }
+    }
+}
+
 static PyObject *
 import_name(PyThreadState *tstate, _PyInterpreterFrame *frame,
             PyObject *name, PyObject *fromlist, PyObject *level)
@@ -7422,29 +7452,38 @@ import_name(PyThreadState *tstate, _PyInterpreterFrame *frame,
         return NULL;
     }
     PyObject *locals = frame->f_locals;
+    PyObject *field = PyUnicode_FromString("importing");
+    PyObject *split_string = PyUnicode_FromString(".");
+    PyObject *split = PyUnicode_Split(name, split_string, -1);
+    PyObject *split_name = PyList_GetItem(split, 0);
     /* Fast path for not overloaded __import__. */
     if (import_func == tstate->interp->import_func) {
         int ilevel = _PyLong_AsInt(level);
         if (ilevel == -1 && _PyErr_Occurred(tstate)) {
             return NULL;
         }
+        check_importing(tstate, split_name, field);
+        append_importing(tstate, split_name, field);
         res = PyImport_ImportModuleLevelObject(
                         name,
                         frame->f_globals,
                         locals == NULL ? Py_None :locals,
                         fromlist,
                         ilevel);
+        pop_importing(tstate, field);
         return res;
     }
 
     Py_INCREF(import_func);
-
+    check_importing(tstate, split_name, field);
+    append_importing(tstate, split_name, field);
     stack[0] = name;
     stack[1] = frame->f_globals;
     stack[2] = locals == NULL ? Py_None : locals;
     stack[3] = fromlist;
     stack[4] = level;
     res = _PyObject_FastCall(import_func, stack, 5);
+    pop_importing(tstate, field);
     Py_DECREF(import_func);
     return res;
 }

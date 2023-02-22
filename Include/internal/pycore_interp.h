@@ -120,6 +120,10 @@ struct _is {
     PyObject *modules_by_index;
     // Dictionary of the sys module
     PyObject *sysdict;
+    // Dictionary setting the module import policy
+    PyObject *policy;
+    // List of dependencies used when importing a module
+    PyObject *importing;
     // Dictionary of the builtins module
     PyObject *builtins;
     // importlib module
