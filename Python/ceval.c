@@ -7407,8 +7407,7 @@ _PyEval_SliceIndexNotNone(PyObject *v, Py_ssize_t *pi)
     return 1;
 }
 
-void 
-append_importing(PyThreadState *tstate, PyObject* name, PyObject* field) {
+void append_importing(PyThreadState *tstate, PyObject* name, PyObject* field) {
     PyList_Append(tstate->interp->importing, name);
 }
 
@@ -7419,22 +7418,23 @@ void pop_importing(PyThreadState *tstate, PyObject* field){
 }
 
 void check_importing(PyThreadState* tstate, PyObject* name, PyObject* field){
-    PyObject *list = tstate->interp->importing;
-    //PyObject *policy = tstate->interp->policy;
-    PyObject* policy = PySys_GetObject("policy");
+  PyObject *list = tstate->interp->importing;
+  PyObject *policy = tstate->interp->policy;
+  if (policy != NULL) {
     // hacky size check for imports
     Py_ssize_t list_size = PyList_Size(list);
     if (list_size > 0) {
-        PyObject* root = PyList_GetItem(list, 0);
-        if (PyDict_Contains(policy, name) == 1) {
-            PyObject* policy_list = PyDict_GetItem(policy, name);
-            if (PySequence_Contains(policy_list, root) == 0) {
-              _PyErr_Format(tstate, PyExc_ImportError,
+      PyObject* root = PyList_GetItem(list, 0);
+      if (PyDict_Contains(policy, name) == 1) {
+        PyObject* policy_list = PyDict_GetItem(policy, name);
+        if (PySequence_Contains(policy_list, root) == 0) {
+          _PyErr_Format(tstate, PyExc_ImportError,
                         "Not allowed to import %U as a %s of %U!",
-                        name, list_size > 1 ? "sub-dependency":"dependency", root);
-            }
+                         name, list_size > 1 ? "sub-dependency":"dependency", root);
         }
+      }
     }
+  }
 }
 
 static PyObject *

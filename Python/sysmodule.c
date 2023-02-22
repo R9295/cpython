@@ -3002,8 +3002,6 @@ _PySys_InitCore(PyThreadState *tstate, PyObject *sysdict)
     SET_SYS("meta_path", PyList_New(0));
     SET_SYS("path_importer_cache", PyDict_New());
     SET_SYS("path_hooks", PyList_New(0));
-    /* adding import policy related entries */
-    SET_SYS("policy", PyDict_New());
     if (_PyErr_Occurred(tstate)) {
         goto err_occurred;
     }

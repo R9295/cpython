@@ -1182,6 +1182,19 @@ init_interp_main(PyThreadState *tstate)
         interp->runtime->initialized = 1;
     }
 
+        PyObject *builtins_module = PyImport_ImportModule("builtins");
+        PyObject *policy_fp = PyObject_CallMethodOneArg(builtins_module, PyUnicode_FromString("open"), PyUnicode_FromString("policy.json"));
+        if (policy_fp == NULL) {
+          printf("%s\n", "----- Proceeding WITHOUT an import policy -----");
+          PyErr_Clear();
+        } else {
+          printf("%s\n", "----- Proceeding WITH an import policy -----");
+          PyObject* policy_raw = PyObject_CallMethodNoArgs(policy_fp, PyUnicode_FromString("read"));
+          PyObject* json_mod = PyImport_ImportModule("json");
+          PyObject* policy_dict = PyObject_CallMethodOneArg(json_mod, PyUnicode_FromString("loads"), policy_raw);
+          // TODO: handle error on invalid json
+          interp->policy = policy_dict;
+        }
     if (config->site_import) {
         status = init_import_site();
         if (_PyStatus_EXCEPTION(status)) {
