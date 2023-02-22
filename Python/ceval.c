@@ -7418,19 +7418,19 @@ void pop_importing(PyThreadState *tstate, PyObject* field){
 }
 
 void check_importing(PyThreadState* tstate, PyObject* name, PyObject* field){
-  PyObject *list = tstate->interp->importing;
+  PyObject *import_list = tstate->interp->importing;
   PyObject *policy = tstate->interp->policy;
   if (policy != NULL) {
     // hacky size check for imports
-    Py_ssize_t list_size = PyList_Size(list);
+    Py_ssize_t list_size = PyList_Size(import_list);
     if (list_size > 0) {
-      PyObject* root = PyList_GetItem(list, 0);
+      PyObject* root = PyList_GetItem(import_list, 0);
       if (PyDict_Contains(policy, name) == 1) {
         PyObject* policy_list = PyDict_GetItem(policy, name);
         if (PySequence_Contains(policy_list, root) == 0) {
           _PyErr_Format(tstate, PyExc_ImportError,
                         "Not allowed to import \"%U\" as a %s of \"%U\"!\nImport log until %U: %U",
-                         name, list_size > 1 ? "sub-dependency":"dependency", root, name, PyObject_Repr(list));
+                         name, list_size > 1 ? "sub-dependency":"dependency", root, name, PyObject_Repr(import_list));
         }
       }
     }
