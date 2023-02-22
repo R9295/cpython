@@ -7429,8 +7429,8 @@ void check_importing(PyThreadState* tstate, PyObject* name, PyObject* field){
         PyObject* policy_list = PyDict_GetItem(policy, name);
         if (PySequence_Contains(policy_list, root) == 0) {
           _PyErr_Format(tstate, PyExc_ImportError,
-                        "Not allowed to import \"%U\" as a %s of \"%U\"!",
-                         name, list_size > 1 ? "sub-dependency":"dependency", root);
+                        "Not allowed to import \"%U\" as a %s of \"%U\"!\nImport log until %U: %U",
+                         name, list_size > 1 ? "sub-dependency":"dependency", root, name, PyObject_Repr(list));
         }
       }
     }
