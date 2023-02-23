@@ -46,7 +46,7 @@ vim /path/to/my/python/file/policy.json
 # This is a bug that I need to fix. 
 # You have to be in the same directory as the policy file for it to work :(
 cd /path/to/my/python/file/
-python /path/to/my/python/file
+python script.py
 ```
 ### Demo
 [![asciicast](https://asciinema.org/a/562388.svg)](https://asciinema.org/a/562388)
