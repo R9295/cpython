@@ -2,7 +2,7 @@
 
 #### A rough and humble attempt at introducing import policies in Python 3.11.0. Feedback welcome!
 
-### Please see [Demo](#Demo) and [Note](#Notes)
+### Please see [Demo](#demo), [Note](#note) and [Try It](#try-it)
 
 ### Introduction
 With software supply chain attacks becoming increasingly prevelant and Python lacking a permission system such as the one deno [implements](https://deno.land/manual/getting_started/permissions), third party modules are increasingly becoming uncomfortable to use. Efforts like [packj](https://packj.dev/), [panoptisch](https://github.com/R9295/panoptisch)(written by me), and [semgrep](https://github.com/returntocorp/semgrep) may help alleviate some concerns but static analysis can never satisfy all concerns. Thus, efforts to limit access to sensitive APIs such as network, filesystem and shell, ffi are critical.
@@ -27,13 +27,13 @@ I can grant it ``socket`` access like the following:
 Now, it wouldn't matter if requests does not *directly* import ``socket``. If any of the sub-dependencies of ``requests`` imports ``socket``, it would allow (or prevent) them.
 
 ### Note
-**Please note** I am neither a CPython developer nor a C developer. This is a very humble attempt that I would gladly pursue if it is deemed feasible and if anyone is interested!
+**Please note** I am neither a CPython developer nor a C developer. This is a very humble attempt that I would gladly pursue if it is deemed feasible and if anyone is interested! It is also not foolproof!
 I'm fairly certain that something such as this [method](https://daddycocoaman.dev/posts/bypassing-python38-audit-hooks-part-1/) can bypass this functionality. 
 
 ### Further Work
 1. Restrict ``builtins`` such as ``open()`` ``print()`` etc.
 
-### How to use
+### Try it
 ```
 git clone https://github.com/R9295/cpython
 cd cpython
@@ -43,6 +43,9 @@ make -j$(nproc)
 ./python -m venv venv
 source venv/bin/activate
 vim /path/to/my/python/file/policy.json
+# This is a bug that I need to fix. 
+# You have to be in the same directory as the policy file for it to work :(
+cd /path/to/my/python/file/
 python /path/to/my/python/file
 ```
 ### Demo
