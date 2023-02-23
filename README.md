@@ -30,5 +30,8 @@ Now, it wouldn't matter if requests does not *directly* import ``socket``. If an
 **Please note** I am neither a CPython developer nor a C developer. This is a very humble attempt that I would gladly pursue if it is deemed feasible and if anyone is interested!
 I'm fairly certain that something such as this [method](https://daddycocoaman.dev/posts/bypassing-python38-audit-hooks-part-1/) can bypass this functionality. 
 
+### Further Work
+1. Restrict ``builtins`` such as ``open()`` ``print()`` etc.
+
 ### Demo
 [![asciicast](https://asciinema.org/a/562388.svg)](https://asciinema.org/a/562388)
