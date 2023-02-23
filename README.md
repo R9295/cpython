@@ -31,4 +31,4 @@ Now, it wouldn't matter if requests does not *directly* import ``socket``. If an
 I'm fairly certain that something such as this [method](https://daddycocoaman.dev/posts/bypassing-python38-audit-hooks-part-1/) can bypass this functionality. 
 
 ### Demo
-[![asciicast](https://asciinema.org/a/562385.svg)](https://asciinema.org/a/562385)
+[![asciicast](https://asciinema.org/a/562388.svg)](https://asciinema.org/a/562388)
