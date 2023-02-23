@@ -7483,7 +7483,11 @@ import_name(PyThreadState *tstate, _PyInterpreterFrame *frame,
     stack[4] = level;
     res = _PyObject_FastCall(import_func, stack, 5);
     pop_importing(tstate);
+
+    Py_DECREF(split_string);
+    Py_DECREF(split_module_name);
     Py_DECREF(import_func);
+
     return res;
 }
 

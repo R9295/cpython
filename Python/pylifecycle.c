@@ -1182,19 +1182,32 @@ init_interp_main(PyThreadState *tstate)
         interp->runtime->initialized = 1;
     }
 
-        PyObject *builtins_module = PyImport_ImportModule("builtins");
-        PyObject *policy_fp = PyObject_CallMethodOneArg(builtins_module, PyUnicode_FromString("open"), PyUnicode_FromString("policy.json"));
+        PyObject* builtins_module = PyImport_ImportModule("builtins");
+        PyObject* open = PyUnicode_FromString("open");
+        PyObject* policy_fn = PyUnicode_FromString("policy.json");
+        PyObject* policy_fp = PyObject_CallMethodOneArg(builtins_module, open, policy_fn);
         if (policy_fp == NULL) {
           printf("%s\n", "----- Proceeding WITHOUT an import policy -----");
           PyErr_Clear();
         } else {
           printf("%s\n", "----- Proceeding WITH an import policy -----");
-          PyObject* policy_raw = PyObject_CallMethodNoArgs(policy_fp, PyUnicode_FromString("read"));
+          PyObject* read = PyUnicode_FromString("read");
+          PyObject* policy_raw = PyObject_CallMethodNoArgs(policy_fp, read);
           PyObject* json_mod = PyImport_ImportModule("json");
-          PyObject* policy_dict = PyObject_CallMethodOneArg(json_mod, PyUnicode_FromString("loads"), policy_raw);
+          PyObject* loads = PyUnicode_FromString("loads");
+          PyObject* policy_dict = PyObject_CallMethodOneArg(json_mod, loads, policy_raw);
           // TODO: handle error on invalid json
           interp->policy = policy_dict;
+          Py_DECREF(read);
+          Py_DECREF(loads);
+          Py_DECREF(json_mod);
+          PyObject* close = PyUnicode_FromString("close");
+          PyObject_CallMethodNoArgs(policy_fp, close);
+          Py_DECREF(close);
         }
+        Py_DECREF(open);
+        Py_DECREF(policy_fn);
+        Py_DECREF(builtins_module);
     if (config->site_import) {
         status = init_import_site();
         if (_PyStatus_EXCEPTION(status)) {
