@@ -192,7 +192,8 @@ pymain_header(const PyConfig *config)
         return;
     }
 
-    fprintf(stderr, "Python %s on %s\n", Py_GetVersion(), Py_GetPlatform());
+    PyInterpreterState *interp = _PyInterpreterState_GET();
+    fprintf(stderr, "Python %s on %s\n-----Running %s an import policy-----\n", Py_GetVersion(), Py_GetPlatform(), interp->policy == NULL ? "WITHOUT":"WITH");
     if (config->site_import) {
         fprintf(stderr, "%s\n", COPYRIGHT);
     }

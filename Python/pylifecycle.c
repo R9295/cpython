@@ -1187,10 +1187,8 @@ init_interp_main(PyThreadState *tstate)
         PyObject* policy_fn = PyUnicode_FromString("policy.json");
         PyObject* policy_fp = PyObject_CallMethodOneArg(builtins_module, open, policy_fn);
         if (policy_fp == NULL) {
-          printf("%s\n", "----- Proceeding WITHOUT an import policy -----");
           PyErr_Clear();
         } else {
-          printf("%s\n", "----- Proceeding WITH an import policy -----");
           PyObject* read = PyUnicode_FromString("read");
           PyObject* policy_raw = PyObject_CallMethodNoArgs(policy_fp, read);
           PyObject* json_mod = PyImport_ImportModule("json");
