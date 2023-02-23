@@ -7455,6 +7455,8 @@ import_name(PyThreadState *tstate, _PyInterpreterFrame *frame,
     PyObject *split_string = PyUnicode_FromString(".");
     PyObject *split_module_name = PyUnicode_Split(name, split_string, -1);
     PyObject *root_module_name = PyList_GetItem(split_module_name, 0);
+    // TODO: why are there imports where the name == "" ? figure it out and handle it
+    // Testcase: when importing requests with socket prevented
     /* Fast path for not overloaded __import__. */
     if (import_func == tstate->interp->import_func) {
         int ilevel = _PyLong_AsInt(level);
