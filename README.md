@@ -33,5 +33,17 @@ I'm fairly certain that something such as this [method](https://daddycocoaman.de
 ### Further Work
 1. Restrict ``builtins`` such as ``open()`` ``print()`` etc.
 
+### How to use
+```
+git clone https://github.com/R9295/cpython
+cd cpython
+git checkout policy
+./configure
+make -j$(nproc)
+./python -m venv venv
+source venv/bin/activate
+vim /path/to/my/python/file/policy.json
+python /path/to/my/python/file
+```
 ### Demo
 [![asciicast](https://asciinema.org/a/562388.svg)](https://asciinema.org/a/562388)
