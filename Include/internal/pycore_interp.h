@@ -106,6 +106,8 @@ struct _is {
     // Dictionary of the sys module
     PyObject *sysdict;
 
+    PyObject *policy;
+
     // Dictionary of the builtins module
     PyObject *builtins;
 

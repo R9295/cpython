@@ -1200,14 +1200,14 @@ init_interp_main(PyThreadState *tstate)
     if (policy_fp == NULL) {
     printf("%s\n", "----- Proceeding WITHOUT a policy -----");
         PyErr_Clear();
-        interp->allowed_global = PyDict_New();
+        interp->policy = PyDict_New();
     } else {
         printf("%s\n", "----- Proceeding WITH a policy -----");
         PyObject* policy_raw = PyObject_CallMethodNoArgs(policy_fp, PyUnicode_FromString("read"));
         PyObject* json_mod = PyImport_ImportModule("json");
         PyObject* policy_dict = PyObject_CallMethodOneArg(json_mod, PyUnicode_FromString("loads"), policy_raw);
         // TODO: handle error on invalid json
-        interp->allowed_global = policy_dict;
+        interp->policy = policy_dict;
     }
     assert(!_PyErr_Occurred(tstate));
 
