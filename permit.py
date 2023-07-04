@@ -11,6 +11,8 @@ permit 'codeberg.org':
     except SystemError as e:
         pass
     permit 'google.com':
-        # allows for nested permits. It will stack the permit values.
         b = socket.socket()
         b.connect(('google.com', 80))
+        # allows for nested permits. It will stack the permit values.
+        g = socket.socket()
+        g = g.connect(('codeberg.org', 80))
