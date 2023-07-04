@@ -447,6 +447,10 @@ _PyOpcode_num_popped(int opcode, int oparg, bool jump) {
             return 0;
         case INSTRUMENTED_POP_JUMP_IF_NOT_NONE:
             return 0;
+        case PERMIT:
+            return 0;
+        case DROP_PERMIT:
+            return 0;
         case EXTENDED_ARG:
             return 0;
         case CACHE:
@@ -873,6 +877,10 @@ _PyOpcode_num_pushed(int opcode, int oparg, bool jump) {
             return 0;
         case INSTRUMENTED_POP_JUMP_IF_NOT_NONE:
             return 0;
+        case PERMIT:
+            return 0;
+        case DROP_PERMIT:
+            return 0;
         case EXTENDED_ARG:
             return 0;
         case CACHE:
@@ -1122,6 +1130,8 @@ const struct opcode_metadata _PyOpcode_opcode_metadata[512] = {
     [INSTRUMENTED_POP_JUMP_IF_FALSE] = { true, INSTR_FMT_IB, HAS_ARG_FLAG },
     [INSTRUMENTED_POP_JUMP_IF_NONE] = { true, INSTR_FMT_IB, HAS_ARG_FLAG },
     [INSTRUMENTED_POP_JUMP_IF_NOT_NONE] = { true, INSTR_FMT_IB, HAS_ARG_FLAG },
+    [PERMIT] = { true, INSTR_FMT_IX, 0 },
+    [DROP_PERMIT] = { true, INSTR_FMT_IX, 0 },
     [EXTENDED_ARG] = { true, INSTR_FMT_IB, HAS_ARG_FLAG },
     [CACHE] = { true, INSTR_FMT_IX, 0 },
     [RESERVED] = { true, INSTR_FMT_IX, 0 },
@@ -1220,6 +1230,8 @@ const struct opcode_macro_expansion _PyOpcode_macro_expansion[256] = {
     [FORMAT_WITH_SPEC] = { .nuops = 1, .uops = { { FORMAT_WITH_SPEC, 0, 0 } } },
     [COPY] = { .nuops = 1, .uops = { { COPY, 0, 0 } } },
     [SWAP] = { .nuops = 1, .uops = { { SWAP, 0, 0 } } },
+    [PERMIT] = { .nuops = 1, .uops = { { PERMIT, 0, 0 } } },
+    [DROP_PERMIT] = { .nuops = 1, .uops = { { DROP_PERMIT, 0, 0 } } },
 };
 #ifdef Py_DEBUG
 const char * const _PyOpcode_uop_name[512] = {

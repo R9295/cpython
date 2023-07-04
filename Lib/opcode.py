@@ -140,8 +140,9 @@ def_op('LOAD_ASSERTION_ERROR', 74)
 def_op('RETURN_GENERATOR', 75)
 
 def_op('RETURN_VALUE', 83)
-
+def_op('PERMIT', 84)
 def_op('SETUP_ANNOTATIONS', 85)
+def_op('DROP_PERMIT', 86)
 def_op('LOAD_LOCALS', 87)
 
 def_op('POP_EXCEPT', 89)

@@ -129,6 +129,7 @@ simple_stmt[stmt_ty] (memo):
 compound_stmt[stmt_ty]:
     | &('def' | '@' | ASYNC) function_def
     | &'if' if_stmt
+    | &'permit' permit_stmt
     | &('class' | '@') class_def
     | &('with' | ASYNC) with_stmt
     | &('for' | ASYNC) for_stmt
@@ -391,6 +392,11 @@ for_stmt[stmt_ty]:
 
 # With statement
 # --------------
+
+permit_stmt[stmt_ty]:
+    | 'permit' n=strings ':' b=block {
+        _PyAST_Permit(n->v.Name.id, b, EXTRA)
+    }
 
 with_stmt[stmt_ty]:
     | invalid_with_stmt_indent

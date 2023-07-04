@@ -36,6 +36,7 @@ module Python
           | While(expr test, stmt* body, stmt* orelse)
           | If(expr test, stmt* body, stmt* orelse)
           | With(withitem* items, stmt* body, string? type_comment)
+          | Permit(constant name, stmt* body)
           | AsyncWith(withitem* items, stmt* body, string? type_comment)
 
           | Match(expr subject, match_case* cases)

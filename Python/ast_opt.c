@@ -888,6 +888,8 @@ astfold_stmt(stmt_ty node_, PyArena *ctx_, _PyASTOptimizeState *state)
         return 0;
     }
     switch (node_->kind) {
+    case Permit_kind:
+        break;
     case FunctionDef_kind:
         CALL_SEQ(astfold_type_param, type_param, node_->v.FunctionDef.type_params);
         CALL(astfold_arguments, arguments_ty, node_->v.FunctionDef.args);

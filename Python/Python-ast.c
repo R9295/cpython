@@ -133,6 +133,7 @@ void _PyAST_Fini(PyInterpreterState *interp)
     Py_CLEAR(state->Or_type);
     Py_CLEAR(state->ParamSpec_type);
     Py_CLEAR(state->Pass_type);
+    Py_CLEAR(state->Permit_type);
     Py_CLEAR(state->Pow_singleton);
     Py_CLEAR(state->Pow_type);
     Py_CLEAR(state->RShift_singleton);
@@ -488,6 +489,10 @@ static const char * const With_fields[]={
     "items",
     "body",
     "type_comment",
+};
+static const char * const Permit_fields[]={
+    "name",
+    "body",
 };
 static const char * const AsyncWith_fields[]={
     "items",
@@ -1183,6 +1188,7 @@ init_types(struct ast_state *state)
         "     | While(expr test, stmt* body, stmt* orelse)\n"
         "     | If(expr test, stmt* body, stmt* orelse)\n"
         "     | With(withitem* items, stmt* body, string? type_comment)\n"
+        "     | Permit(constant name, stmt* body)\n"
         "     | AsyncWith(withitem* items, stmt* body, string? type_comment)\n"
         "     | Match(expr subject, match_case* cases)\n"
         "     | Raise(expr? exc, expr? cause)\n"
@@ -1285,6 +1291,10 @@ init_types(struct ast_state *state)
     if (!state->With_type) return 0;
     if (PyObject_SetAttr(state->With_type, state->type_comment, Py_None) == -1)
         return 0;
+    state->Permit_type = make_type(state, "Permit", state->stmt_type,
+                                   Permit_fields, 2,
+        "Permit(constant name, stmt* body)");
+    if (!state->Permit_type) return 0;
     state->AsyncWith_type = make_type(state, "AsyncWith", state->stmt_type,
                                       AsyncWith_fields, 3,
         "AsyncWith(withitem* items, stmt* body, string? type_comment)");
@@ -2413,6 +2423,29 @@ _PyAST_With(asdl_withitem_seq * items, asdl_stmt_seq * body, string
     p->v.With.items = items;
     p->v.With.body = body;
     p->v.With.type_comment = type_comment;
+    p->lineno = lineno;
+    p->col_offset = col_offset;
+    p->end_lineno = end_lineno;
+    p->end_col_offset = end_col_offset;
+    return p;
+}
+
+stmt_ty
+_PyAST_Permit(constant name, asdl_stmt_seq * body, int lineno, int col_offset,
+              int end_lineno, int end_col_offset, PyArena *arena)
+{
+    stmt_ty p;
+    if (!name) {
+        PyErr_SetString(PyExc_ValueError,
+                        "field 'name' is required for Permit");
+        return NULL;
+    }
+    p = (stmt_ty)_PyArena_Malloc(arena, sizeof(*p));
+    if (!p)
+        return NULL;
+    p->kind = Permit_kind;
+    p->v.Permit.name = name;
+    p->v.Permit.body = body;
     p->lineno = lineno;
     p->col_offset = col_offset;
     p->end_lineno = end_lineno;
@@ -4229,6 +4262,21 @@ ast2obj_stmt(struct ast_state *state, void* _o)
         value = ast2obj_string(state, o->v.With.type_comment);
         if (!value) goto failed;
         if (PyObject_SetAttr(result, state->type_comment, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        break;
+    case Permit_kind:
+        tp = (PyTypeObject *)state->Permit_type;
+        result = PyType_GenericNew(tp, NULL, NULL);
+        if (!result) goto failed;
+        value = ast2obj_constant(state, o->v.Permit.name);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->name, value) == -1)
+            goto failed;
+        Py_DECREF(value);
+        value = ast2obj_list(state, (asdl_seq*)o->v.Permit.body, ast2obj_stmt);
+        if (!value) goto failed;
+        if (PyObject_SetAttr(result, state->body, value) == -1)
             goto failed;
         Py_DECREF(value);
         break;
@@ -7722,6 +7770,75 @@ obj2ast_stmt(struct ast_state *state, PyObject* obj, stmt_ty* out, PyArena*
         }
         *out = _PyAST_With(items, body, type_comment, lineno, col_offset,
                            end_lineno, end_col_offset, arena);
+        if (*out == NULL) goto failed;
+        return 0;
+    }
+    tp = state->Permit_type;
+    isinstance = PyObject_IsInstance(obj, tp);
+    if (isinstance == -1) {
+        return 1;
+    }
+    if (isinstance) {
+        constant name;
+        asdl_stmt_seq* body;
+
+        if (_PyObject_LookupAttr(obj, state->name, &tmp) < 0) {
+            return 1;
+        }
+        if (tmp == NULL) {
+            PyErr_SetString(PyExc_TypeError, "required field \"name\" missing from Permit");
+            return 1;
+        }
+        else {
+            int res;
+            if (_Py_EnterRecursiveCall(" while traversing 'Permit' node")) {
+                goto failed;
+            }
+            res = obj2ast_constant(state, tmp, &name, arena);
+            _Py_LeaveRecursiveCall();
+            if (res != 0) goto failed;
+            Py_CLEAR(tmp);
+        }
+        if (_PyObject_LookupAttr(obj, state->body, &tmp) < 0) {
+            return 1;
+        }
+        if (tmp == NULL) {
+            tmp = PyList_New(0);
+            if (tmp == NULL) {
+                return 1;
+            }
+        }
+        {
+            int res;
+            Py_ssize_t len;
+            Py_ssize_t i;
+            if (!PyList_Check(tmp)) {
+                PyErr_Format(PyExc_TypeError, "Permit field \"body\" must be a list, not a %.200s", _PyType_Name(Py_TYPE(tmp)));
+                goto failed;
+            }
+            len = PyList_GET_SIZE(tmp);
+            body = _Py_asdl_stmt_seq_new(len, arena);
+            if (body == NULL) goto failed;
+            for (i = 0; i < len; i++) {
+                stmt_ty val;
+                PyObject *tmp2 = Py_NewRef(PyList_GET_ITEM(tmp, i));
+                if (_Py_EnterRecursiveCall(" while traversing 'Permit' node")) {
+                    goto failed;
+                }
+                res = obj2ast_stmt(state, tmp2, &val, arena);
+                _Py_LeaveRecursiveCall();
+                Py_DECREF(tmp2);
+                if (res != 0) goto failed;
+                if (len != PyList_GET_SIZE(tmp)) {
+                    PyErr_SetString(PyExc_RuntimeError, "Permit field \"body\" changed size during iteration");
+                    goto failed;
+                }
+                asdl_seq_SET(body, i, val);
+            }
+            Py_CLEAR(tmp);
+        }
+        *out = _PyAST_Permit(name, body, lineno, col_offset, end_lineno,
+                             end_col_offset, arena);
         if (*out == NULL) goto failed;
         return 0;
     }
@@ -12726,6 +12843,9 @@ astmodule_exec(PyObject *m)
         return -1;
     }
     if (PyModule_AddObjectRef(m, "With", state->With_type) < 0) {
+        return -1;
+    }
+    if (PyModule_AddObjectRef(m, "Permit", state->Permit_type) < 0) {
         return -1;
     }
     if (PyModule_AddObjectRef(m, "AsyncWith", state->AsyncWith_type) < 0) {

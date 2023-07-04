@@ -726,6 +726,9 @@ validate_stmt(struct validator *state, stmt_ty stmt)
         return 0;
     }
     switch (stmt->kind) {
+    case Permit_kind:
+        // TODO
+        break;
     case FunctionDef_kind:
         ret = validate_body(state, stmt->v.FunctionDef.body, "FunctionDef") &&
             validate_type_params(state, stmt->v.FunctionDef.type_params) &&

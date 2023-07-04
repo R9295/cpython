@@ -1173,7 +1173,6 @@ dummy_func(
             DECREF_INPUTS();
             ERROR_IF(err, error);
         }
-
         inst(STORE_GLOBAL, (v --)) {
             PyObject *name = GETITEM(FRAME_CO_NAMES, oparg);
             int err = PyDict_SetItem(GLOBALS(), name, v);
@@ -3564,6 +3563,21 @@ dummy_func(
                  offset = oparg;
             }
             INSTRUMENTED_JUMP(here, next_instr + offset, PY_MONITORING_EVENT_BRANCH);
+        }
+        // References are leaked here prolly
+        inst(PERMIT, ( -- )) {
+            PyObject *value = POP();
+            PyObject* policy = tstate->interp->policy;
+            PyList_Append(policy, value);
+            printf("APPENDED! POLICY: %s\n", PyUnicode_AsUTF8(PyObject_Repr(policy)));
+        }
+
+        // References are leaked here prolly
+        inst(DROP_PERMIT, ( -- )) {
+            PyObject* policy = tstate->interp->policy;
+            Py_ssize_t list_size = PyList_Size(policy);
+            tstate->interp->policy = PyList_GetSlice(policy, 0, list_size - 1);
+            printf("DROPPED! POLICY: %s\n", PyUnicode_AsUTF8(PyObject_Repr(tstate->interp->policy)));
         }
 
         inst(EXTENDED_ARG, ( -- )) {

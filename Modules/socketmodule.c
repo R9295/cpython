@@ -1035,7 +1035,6 @@ init_sockobject(socket_state *state, PySocketSockObject *s,
 {
     s->sock_fd = fd;
     s->sock_family = family;
-    s->sock_allowed = PyList_New(0);
     s->sock_type = type;
 
     /* It's possible to pass SOCK_NONBLOCK and SOCK_CLOEXEC bit flags
@@ -3481,9 +3480,9 @@ sock_connect(PySocketSockObject *s, PyObject *addro)
         return NULL;
     }
     PyObject* addr = PyTuple_GetItem(addro, 0);
-    if (PySequence_Contains(s->sock_allowed, addr) == 0) {
+    if (PySys_CheckPolicy(addr) == 0) {
         PyErr_Format(PyExc_SystemError,
-                        "Not allowed to connect to %s.", PyUnicode_AsUTF8(addr), NULL);
+            "Not allowed to connect to %s.", PyUnicode_AsUTF8(addr), NULL);
         return NULL;
     }
     if (PySys_Audit("socket.connect", "OO", s, addro) < 0) {
@@ -5214,7 +5213,6 @@ static PyMemberDef sock_memberlist[] = {
        {"family", T_INT, offsetof(PySocketSockObject, sock_family), READONLY, "the socket family"},
        {"type", T_INT, offsetof(PySocketSockObject, sock_type), READONLY, "the socket type"},
        {"proto", T_INT, offsetof(PySocketSockObject, sock_proto), READONLY, "the socket protocol"},
-       {"allowed", T_OBJECT, offsetof(PySocketSockObject, sock_allowed), 0, "the socket whitelist"},
        {0},
 };
 

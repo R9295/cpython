@@ -325,6 +325,12 @@ PySys_Audit(const char *event, const char *argFormat, ...)
     return res;
 }
 
+int
+PySys_CheckPolicy(PyObject* val)
+{
+    PyThreadState *tstate = _PyThreadState_GET();
+    return PySequence_Contains(tstate->interp->policy, val);
+}
 /* We expose this function primarily for our own cleanup during
  * finalization. In general, it should not need to be called,
  * and as such the function is not exported.

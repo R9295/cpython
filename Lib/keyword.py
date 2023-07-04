@@ -45,6 +45,7 @@ kwlist = [
     'not',
     'or',
     'pass',
+    'permit',
     'raise',
     'return',
     'try',

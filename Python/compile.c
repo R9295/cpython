@@ -1380,6 +1380,9 @@ find_ann(asdl_stmt_seq *stmts)
         case With_kind:
             res = find_ann(st->v.With.body);
             break;
+        case Permit_kind:
+            res = find_ann(st->v.Permit.body);
+            break;
         case AsyncWith_kind:
             res = find_ann(st->v.AsyncWith.body);
             break;
@@ -3702,6 +3705,15 @@ compiler_try(struct compiler *c, stmt_ty s) {
 }
 
 static int
+compiler_permit(struct compiler *c, stmt_ty s) {
+    ADDOP_LOAD_CONST(c, LOC(s), s->v.Permit.name);
+    ADDOP(c, LOC(s), PERMIT);
+    VISIT_SEQ(c, stmt, s->v.Permit.body);
+    ADDOP(c, LOC(s), DROP_PERMIT);
+    return SUCCESS;
+}
+
+static int
 compiler_try_star(struct compiler *c, stmt_ty s)
 {
     if (s->v.TryStar.finalbody && asdl_seq_LEN(s->v.TryStar.finalbody)) {
@@ -3923,6 +3935,8 @@ compiler_visit_stmt(struct compiler *c, stmt_ty s)
         return compiler_typealias(c, s);
     case Return_kind:
         return compiler_return(c, s);
+    case Permit_kind:
+        return compiler_permit(c, s);
     case Delete_kind:
         VISIT_SEQ(c, expr, s->v.Delete.targets)
         break;
